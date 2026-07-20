@@ -1,11 +1,31 @@
 /* ============================================
-   AMNA SHOE PALACE - Complete POS System v2.0
+   AMNA SHOE PALACE - Complete POS System v3.0
+   Firebase Realtime Database Connected
    Oddamavadi, Sri Lanka | Mobile + Desktop
-   Features: Barcode Scan, Dark/Light Mode, PDF, Reports, Low Stock
+   Features: Cloud Sync, Barcode Scan, Dark/Light Mode, PDF, Reports, Low Stock
    ============================================ */
 
 // =====================
-// DATA STORAGE (Local)
+// FIREBASE SETUP
+// =====================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBFdrd4QZpvStsbyedMugjyUFWDVxbbHZA",
+    authDomain: "amna-shoe-palace-oddamavadi.firebaseapp.com",
+    projectId: "amna-shoe-palace-oddamavadi",
+    storageBucket: "amna-shoe-palace-oddamavadi.firebasestorage.app",
+    messagingSenderId: "1054800812153",
+    appId: "1:1054800812153:web:eeae03983c2287dad5dca8",
+    databaseURL: "https://amna-shoe-palace-oddamavadi-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+// =====================
+// DATA STORAGE (Firebase + Local Backup)
 // =====================
 const DB = {
     products: JSON.parse(localStorage.getItem('amna_products')) || [],
@@ -24,17 +44,74 @@ const DB = {
 };
 
 let currentBill = [];
+let dataLoaded = false;
 
 // =====================
-// UTILITY FUNCTIONS
+// FIREBASE FUNCTIONS
 // =====================
-function saveDB() {
+async function saveToFirebase(path, data) {
+    try {
+        await set(ref(database, path), data);
+        console.log('☁️ Firebase saved:', path);
+    } catch (e) {
+        console.error('❌ Firebase save error:', e);
+    }
+}
+
+async function loadFromFirebase(path) {
+    try {
+        const snapshot = await get(ref(database, path));
+        return snapshot.val();
+    } catch (e) {
+        console.error('❌ Firebase load error:', e);
+        return null;
+    }
+}
+
+async function loadAllData() {
+    console.log('🔄 Loading data from Firebase...');
+
+    const [products, bills, categories, settings] = await Promise.all([
+        loadFromFirebase('products'),
+        loadFromFirebase('bills'),
+        loadFromFirebase('categories'),
+        loadFromFirebase('settings')
+    ]);
+
+    if (products) DB.products = products;
+    if (bills) DB.bills = bills;
+    if (categories) DB.categories = categories;
+    if (settings) DB.settings = { ...DB.settings, ...settings };
+
+    saveLocalBackup();
+    dataLoaded = true;
+    console.log('✅ Data loaded from Firebase!');
+
+    // Refresh UI
+    if (document.querySelector('.customer-page')) {
+        initCustomerPage();
+    }
+}
+
+function saveLocalBackup() {
     localStorage.setItem('amna_products', JSON.stringify(DB.products));
     localStorage.setItem('amna_bills', JSON.stringify(DB.bills));
     localStorage.setItem('amna_categories', JSON.stringify(DB.categories));
     localStorage.setItem('amna_settings', JSON.stringify(DB.settings));
 }
 
+function saveDB() {
+    saveLocalBackup();
+    // Auto sync to Firebase
+    saveToFirebase('products', DB.products);
+    saveToFirebase('bills', DB.bills);
+    saveToFirebase('categories', DB.categories);
+    saveToFirebase('settings', DB.settings);
+}
+
+// =====================
+// UTILITY FUNCTIONS
+// =====================
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
@@ -1448,7 +1525,10 @@ function restoreData(event) {
 // INITIALIZATION
 // =====================
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('.customer-page')) {
-        initCustomerPage();
-    }
+    // Load from Firebase first, then init
+    loadAllData().then(() => {
+        if (document.querySelector('.customer-page')) {
+            initCustomerPage();
+        }
+    });
 });
