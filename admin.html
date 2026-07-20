@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMNA SHOE PALACE - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="admin-page">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box glass">
+            <div class="login-logo">
+                <i class="fas fa-shoe-prints"></i>
+                <h2>AMNA SHOE PALACE</h2>
+                <p>Admin Panel</p>
+            </div>
+            <div class="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="adminUser" placeholder="Username" value="admin">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="adminPass" placeholder="Password" value="">
+                </div>
+                <button class="login-btn" onclick="login()">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <p class="login-hint">Default: admin / admin123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard" style="display:none;">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar glass">
+            <div class="sidebar-header">
+                <i class="fas fa-shoe-prints"></i>
+                <span>AMNA Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="products">
+                    <i class="fas fa-box"></i> <span>Products</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="add-product">
+                    <i class="fas fa-plus-circle"></i> <span>Add Product</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="categories">
+                    <i class="fas fa-tags"></i> <span>Categories</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="billing">
+                    <i class="fas fa-file-invoice-dollar"></i> <span>Billing</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="barcode">
+                    <i class="fas fa-barcode"></i> <span>Barcode</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="reports">
+                    <i class="fas fa-chart-bar"></i> <span>Reports</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="settings">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="tab-dashboard">
+                <h2 class="page-title"><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card glass">
+                        <i class="fas fa-box"></i>
+                        <div class="stat-info">
+                            <h3 id="totalProducts">0</h3>
+                            <p>Total Products</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <i class="fas fa-shopping-cart"></i>
+                        <div class="stat-info">
+                            <h3 id="totalSales">0</h3>
+                            <p>Total Sales</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <i class="fas fa-rupee-sign"></i>
+                        <div class="stat-info">
+                            <h3 id="totalRevenue">Rs. 0</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <i class="fas fa-tags"></i>
+                        <div class="stat-info">
+                            <h3 id="totalCategories">0</h3>
+                            <p>Categories</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <i class="fas fa-receipt"></i>
+                        <div class="stat-info">
+                            <h3 id="todayBills">0</h3>
+                            <p>Today's Bills</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass danger-stat">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="stat-info">
+                            <h3 id="lowStockCount">0</h3>
+                            <p>Low Stock Alerts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="recent-bills glass">
+                        <h3><i class="fas fa-history"></i> Recent Bills</h3>
+                        <div class="bills-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Bill #</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentBillsBody">
+                                    <tr><td colspan="5" class="empty-msg">No bills yet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="low-stock-panel glass">
+                        <h3><i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> Low Stock Alerts</h3>
+                        <div id="lowStockAlerts">
+                            <p style="color:var(--text-muted);text-align:center;padding:20px;">No low stock alerts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div class="tab-content" id="tab-products">
+                <h2 class="page-title"><i class="fas fa-box"></i> All Products</h2>
+                <div class="products-table-wrapper glass">
+                    <div class="table-header">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="adminSearch" placeholder="Search products...">
+                        </div>
+                        <button class="btn-export" onclick="exportProducts()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Barcode</th>
+                                <th>Name</th>
+                                <th>Brand</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsBody">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add Product Tab -->
+            <div class="tab-content" id="tab-add-product">
+                <h2 class="page-title"><i class="fas fa-plus-circle"></i> Add New Product</h2>
+                <div class="form-card glass">
+                    <form id="addProductForm" onsubmit="addProduct(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label><i class="fas fa-barcode"></i> Barcode</label>
+                                <div class="input-with-btn">
+                                    <input type="text" id="prodBarcode" placeholder="Enter or generate barcode">
+                                    <button type="button" class="btn-icon" onclick="generateBarcode()" title="Generate Barcode">
+                                        <i class="fas fa-random"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-tag"></i> Product Name</label>
+                                <input type="text" id="prodName" placeholder="e.g., Bata Formal Shoes" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-industry"></i> Brand</label>
+                                <input type="text" id="prodBrand" placeholder="e.g., Bata, Nike, Adidas">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-list"></i> Category</label>
+                                <select id="prodCategory" required>
+                                    <option value="">Select Category</option>
+                                </select>
+                                <small style="color:var(--text-muted);font-size:11px;margin-top:4px;">
+                                    <i class="fas fa-info-circle"></i> Add categories from "Categories" tab first
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-rupee-sign"></i> Price (Rs.)</label>
+                                <input type="number" id="prodPrice" placeholder="Enter price" min="0" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-cubes"></i> Stock Quantity</label>
+                                <input type="number" id="prodStock" placeholder="Enter stock" min="0" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-bell" style="color:var(--danger);"></i> Low Stock Alert At</label>
+                                <input type="number" id="lowStockThreshold" placeholder="e.g., 5" min="0" value="">
+                                <small style="color:var(--text-muted);font-size:11px;margin-top:4px;">
+                                    <i class="fas fa-info-circle"></i> Alert when stock reaches this number
+                                </small>
+                            </div>
+                            <div class="form-group full-width">
+                                <label><i class="fas fa-image"></i> Product Photo</label>
+                                <div class="photo-upload-area" id="photoUploadArea">
+                                    <input type="file" id="prodPhoto" accept="image/*" onchange="previewPhoto(event)">
+                                    <div class="upload-placeholder" id="uploadPlaceholder">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Click or drag photo here</p>
+                                        <small>Supports: JPG, PNG, WEBP</small>
+                                    </div>
+                                    <img id="photoPreview" style="display:none;">
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label><i class="fas fa-align-left"></i> Description</label>
+                                <textarea id="prodDesc" rows="3" placeholder="Product description..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Save Product
+                            </button>
+                            <button type="reset" class="btn-secondary" onclick="clearPhoto()">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div class="tab-content" id="tab-categories">
+                <h2 class="page-title"><i class="fas fa-tags"></i> Manage Categories</h2>
+                <div class="categories-layout">
+                    <div class="categories-left">
+                        <div class="form-card glass">
+                            <h4 style="margin-bottom:18px;font-size:15px;display:flex;align-items:center;gap:8px;">
+                                <i class="fas fa-plus-circle" style="color:var(--primary);"></i> Add New Category
+                            </h4>
+                            <div class="form-group">
+                                <label>Category Name</label>
+                                <input type="text" id="newCategoryName" placeholder="e.g., Shoes, Bags, Perfumes...">
+                            </div>
+                            <button class="btn-primary" onclick="addNewCategory()" style="margin-top:10px;">
+                                <i class="fas fa-plus"></i> Add Category
+                            </button>
+                        </div>
+                    </div>
+                    <div class="categories-right">
+                        <div class="products-table-wrapper glass">
+                            <div class="table-header">
+                                <h4 style="font-size:15px;display:flex;align-items:center;gap:8px;">
+                                    <i class="fas fa-list" style="color:var(--primary);"></i> All Categories
+                                </h4>
+                                <span style="color:var(--text-muted);font-size:12px;">
+                                    <span id="totalCategories">0</span> categories
+                                </span>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Slug</th>
+                                        <th>Products</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoriesBody">
+                                    <tr><td colspan="4" class="empty-msg">No categories added yet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Tab -->
+            <div class="tab-content" id="tab-billing">
+                <h2 class="page-title"><i class="fas fa-file-invoice-dollar"></i> Billing / POS</h2>
+                <div class="billing-layout">
+                    <div class="billing-left">
+                        <div class="scan-section glass">
+                            <h4><i class="fas fa-barcode"></i> Scan or Search Product</h4>
+                            <div class="scan-input-group">
+                                <input type="text" id="scanInput" placeholder="Scan barcode or type product name..." onkeypress="handleScan(event)">
+                                <button onclick="searchProductForBill()"><i class="fas fa-search"></i></button>
+                                <button onclick="openBarcodeScanner()" style="background:var(--success);" title="Camera Scan"><i class="fas fa-camera"></i></button>
+                            </div>
+                            <div class="scan-results" id="scanResults"></div>
+                        </div>
+                        <div class="bill-items glass">
+                            <h4><i class="fas fa-shopping-cart"></i> Bill Items</h4>
+                            <div class="bill-table-wrapper">
+                                <table class="bill-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Qty</th>
+                                            <th>Price</th>
+                                            <th>Total</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="billItemsBody">
+                                        <tr class="empty-row"><td colspan="5">Add items to bill</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="billing-right">
+                        <div class="bill-summary glass">
+                            <h4><i class="fas fa-receipt"></i> Bill Summary</h4>
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">Rs. 0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Discount (%):</span>
+                                <input type="number" id="discountPercent" value="0" min="0" max="100" onchange="calculateTotal()">
+                            </div>
+                            <div class="summary-row">
+                                <span>Discount Amount:</span>
+                                <span id="discountAmount">Rs. 0.00</span>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span><strong>Grand Total:</strong></span>
+                                <span id="grandTotal"><strong>Rs. 0.00</strong></span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Payment:</span>
+                                <select id="paymentMode">
+                                    <option value="cash">Cash</option>
+                                    <option value="card">Card</option>
+                                    <option value="upi">UPI</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <button class="btn-generate-bill" onclick="generateBill()">
+                                <i class="fas fa-print"></i> Generate Bill
+                            </button>
+                            <button class="btn-secondary" onclick="downloadCurrentBillPDF()" style="margin-top:8px;width:100%;">
+                                <i class="fas fa-file-pdf"></i> Download PDF
+                            </button>
+                            <button class="btn-clear-bill" onclick="clearBill()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barcode Tab -->
+            <div class="tab-content" id="tab-barcode">
+                <h2 class="page-title"><i class="fas fa-barcode"></i> Barcode Generator</h2>
+                <div class="barcode-section glass">
+                    <div class="barcode-input">
+                        <label>Enter Barcode Value:</label>
+                        <input type="text" id="barcodeValue" placeholder="Enter barcode number">
+                        <button onclick="generateBarcodeImage()">
+                            <i class="fas fa-barcode"></i> Generate Barcode
+                        </button>
+                    </div>
+                    <div class="barcode-display" id="barcodeDisplay">
+                        <p class="empty-msg">Enter a value and click Generate</p>
+                    </div>
+                    <div class="barcode-actions" id="barcodeActions" style="display:none;">
+                        <button onclick="printBarcode()">
+                            <i class="fas fa-print"></i> Print Barcode
+                        </button>
+                        <button onclick="downloadBarcode()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+                <div class="barcode-list glass">
+                    <h3><i class="fas fa-list"></i> Product Barcodes</h3>
+                    <div class="barcode-grid" id="barcodeGrid">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div class="tab-content" id="tab-reports">
+                <h2 class="page-title"><i class="fas fa-chart-bar"></i> Sales Reports</h2>
+                <div class="reports-layout">
+                    <div class="reports-filters glass">
+                        <h4><i class="fas fa-filter"></i> Select Period</h4>
+                        <div class="report-buttons">
+                            <button class="btn-report active" onclick="renderSalesReport('daily'); setActiveReportBtn(this)">
+                                <i class="fas fa-calendar-day"></i> Daily
+                            </button>
+                            <button class="btn-report" onclick="renderSalesReport('weekly'); setActiveReportBtn(this)">
+                                <i class="fas fa-calendar-week"></i> Weekly
+                            </button>
+                            <button class="btn-report" onclick="renderSalesReport('monthly'); setActiveReportBtn(this)">
+                                <i class="fas fa-calendar-alt"></i> Monthly
+                            </button>
+                            <button class="btn-report" onclick="renderSalesReport('yearly'); setActiveReportBtn(this)">
+                                <i class="fas fa-calendar"></i> Yearly
+                            </button>
+                        </div>
+                        <button class="btn-export" onclick="downloadReportPDF('daily')" id="downloadReportBtn" style="margin-top:15px;width:100%;">
+                            <i class="fas fa-file-pdf"></i> Download PDF Report
+                        </button>
+                    </div>
+                    <div class="reports-results" id="reportResults">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="tab-settings">
+                <h2 class="page-title"><i class="fas fa-cog"></i> Store Settings</h2>
+                <div class="settings-grid">
+                    <div class="settings-card glass">
+                        <h4><i class="fas fa-store"></i> Store Details</h4>
+                        <div class="form-group">
+                            <label>Store Name</label>
+                            <input type="text" id="storeName" value="AMNA SHOE PALACE">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea id="storeAddress" rows="2" placeholder="Enter store address..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" id="storePhone" placeholder="+94 XXXXX XXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="storeEmail" placeholder="store@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-clock" style="color:var(--primary);margin-right:6px;"></i> Opening Hours - Weekdays</label>
+                            <input type="text" id="openingHoursWeekdays" placeholder="e.g., Mon - Sat: 9:00 AM - 9:00 PM" value="Mon - Sat: 9:00 AM - 9:00 PM">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-clock" style="color:var(--primary);margin-right:6px;"></i> Opening Hours - Sunday</label>
+                            <input type="text" id="openingHoursSunday" placeholder="e.g., Sunday: 10:00 AM - 6:00 PM" value="Sunday: 10:00 AM - 6:00 PM">
+                        </div>
+                        <button class="btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </div>
+                    <div class="settings-card glass">
+                        <h4><i class="fas fa-lock"></i> Change Password</h4>
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPass">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPass">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" id="confirmPass">
+                        </div>
+                        <button class="btn-primary" onclick="changePassword()">
+                            <i class="fas fa-key"></i> Update Password
+                        </button>
+                    </div>
+                    <div class="settings-card glass danger-zone">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Data Management</h4>
+                        <button class="btn-danger" onclick="clearAllData()">
+                            <i class="fas fa-trash-alt"></i> Clear All Data
+                        </button>
+                        <button class="btn-secondary" onclick="exportAllData()">
+                            <i class="fas fa-download"></i> Backup Data
+                        </button>
+                        <div class="form-group">
+                            <label>Restore from Backup</label>
+                            <input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bill Print Modal -->
+    <div class="modal" id="billModal">
+        <div class="modal-content glass bill-modal">
+            <span class="close-modal" onclick="closeBillModal()">&times;</span>
+            <div id="billPrintArea">
+                <!-- Dynamic bill content -->
+            </div>
+            <div class="bill-actions">
+                <button onclick="printBill()"><i class="fas fa-print"></i> Print</button>
+                <button onclick="downloadCurrentBillPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button onclick="closeBillModal()"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barcode Scanner Modal -->
+    <div class="modal" id="barcodeScanModal">
+        <div class="modal-content glass" style="max-width:500px;">
+            <span class="close-modal" onclick="closeScanModal()">&times;</span>
+            <h3 style="margin-bottom:15px;text-align:center;"><i class="fas fa-barcode" style="color:var(--primary);"></i> Barcode Scanner</h3>
+            <div class="scanner-container" style="position:relative;background:#000;border-radius:12px;overflow:hidden;min-height:300px;display:flex;align-items:center;justify-content:center;">
+                <video id="scannerVideo" style="width:100%;max-height:400px;" autoplay playsinline></video>
+                <canvas id="scannerCanvas" style="display:none;"></canvas>
+                <div class="scanner-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;border:2px dashed var(--primary);margin:40px;border-radius:8px;pointer-events:none;">
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--primary);font-size:12px;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;">
+                        <i class="fas fa-barcode"></i> Align barcode here
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:15px;display:flex;gap:10px;">
+                <input type="text" id="manualBarcodeInput" placeholder="Or type barcode manually..." style="flex:1;padding:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.05);border-radius:8px;color:var(--text-light);font-family:'Poppins',sans-serif;" onkeypress="if(event.key==='Enter')scanManualBarcode()">
+                <button class="btn-primary" onclick="scanManualBarcode()" style="padding:10px 20px;">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="btn-danger" onclick="closeScanModal()" style="padding:10px 20px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="scanResult" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function setActiveReportBtn(btn) {
+            document.querySelectorAll('.btn-report').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
